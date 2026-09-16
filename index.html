@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="Styrkeprogram 21 september till 31 december 2026">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>Styrka till årsskiftet</title>
+  <style>
+    :root{
+      color-scheme:light dark;
+      --bg:#f6f7f9;--card:#fff;--text:#111827;--muted:#6b7280;--border:#d1d5db;
+      --accent:#2563eb;--accentSoft:#dbeafe;--good:#166534;--goodSoft:#dcfce7;
+    }
+    @media (prefers-color-scheme:dark){
+      :root{--bg:#0b1020;--card:#151b2e;--text:#f3f4f6;--muted:#9ca3af;--border:#374151;--accent:#60a5fa;--accentSoft:#172554;--good:#86efac;--goodSoft:#052e16}
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:860px;margin:auto;padding:16px 16px 48px}
+    h1,h2,h3,p{margin-top:0}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:14px}
+    .muted{color:var(--muted)} .small{font-size:.9rem}.tiny{font-size:.78rem}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+    button,a.btn,select,input{font:inherit}
+    button,a.btn{min-height:44px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:10px 12px;text-decoration:none;cursor:pointer}
+    button.primary,a.primary{background:var(--accent);border-color:var(--accent);color:white}
+    button.soft,a.soft{background:var(--accentSoft);border-color:transparent}
+    input,select{min-height:44px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);padding:9px 10px}
+    .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+    .tabs button{padding:9px 6px;min-width:0}
+    .tabs button.active{border-color:var(--accent);background:var(--accentSoft)}
+    .exercise{border:1px solid var(--border);border-radius:14px;padding:13px;margin-top:10px}
+    .exercise.done{opacity:.65}
+    .pill{display:inline-block;border-radius:999px;padding:4px 8px;background:var(--accentSoft);font-size:.8rem}
+    .progress{height:10px;background:rgba(127,127,127,.2);border-radius:999px;overflow:hidden;margin-top:12px}
+    .progress>div{height:100%;width:0;background:var(--accent)}
+    .guide{display:none;background:rgba(127,127,127,.1);border-radius:12px;padding:10px;margin-top:9px}
+    .guide.open{display:block}
+    .history-item{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--border);padding:10px 0}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .full{width:100%}
+    .status{min-height:1.2em}
+    @media(max-width:640px){
+      .tabs{grid-template-columns:repeat(2,1fr)}
+      .grid2{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="card">
+    <div class="row between">
+      <div>
+        <div class="small muted">21 september – 31 december 2026</div>
+        <h1>Styrka till årsskiftet</h1>
+        <p class="muted">2 gympass + 3 kroppsviktspass per vecka.</p>
+      </div>
+      <button id="installBtn" class="primary" hidden>Installera app</button>
+    </div>
+    <label class="small">Träningsvecka</label>
+    <select id="weekSelect" class="full"></select>
+    <div class="progress"><div id="progressBar"></div></div>
+    <p id="progressText" class="small muted"></p>
+  </section>
+
+  <nav id="tabs" class="tabs" aria-label="Veckans pass"></nav>
+
+  <section class="card">
+    <div class="row between">
+      <div>
+        <div id="sessionDay" class="small muted"></div>
+        <h2 id="sessionTitle"></h2>
+        <div id="sessionInfo" class="small muted"></div>
+      </div>
+      <label class="row"><input id="sessionDone" type="checkbox"> Pass klart</label>
+    </div>
+    <div id="exerciseList"></div>
+    <div class="guide open" style="margin-top:14px">
+      <strong>Progression</strong>
+      <p id="progressionText" class="small muted" style="margin:6px 0 0"></p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row between">
+      <div><h3>Historik</h3><p class="small muted">Senaste registrerade gymvikterna.</p></div>
+      <button id="exportBtn">Exportera</button>
+    </div>
+    <div id="history"></div>
+  </section>
+
+  <section class="card">
+    <h3>Data & backup</h3>
+    <p class="small muted">Appen sparar automatiskt lokalt på den här enheten. Exportera gärna en backup ibland.</p>
+    <div class="row">
+      <label class="btn">Importera backup<input id="importFile" type="file" accept=".json,application/json" hidden></label>
+      <button id="clearBtn">Rensa all data</button>
+    </div>
+    <p id="status" class="small muted status"></p>
+  </section>
+</main>
+
+<script>
+const weeks = [
+  ["21–27 sep","Grundträning"],["28 sep–4 okt","Grundträning"],["5–11 okt","Byggfas"],
+  ["12–18 okt","Byggfas"],["19–25 okt","Byggfas"],["26 okt–1 nov","Lätt vecka"],
+  ["2–8 nov","Styrkefas"],["9–15 nov","Styrkefas"],["16–22 nov","Styrkefas"],
+  ["23–29 nov","Tyngre styrka"],["30 nov–6 dec","Tyngre styrka"],["7–13 dec","Tyngre styrka"],
+  ["14–20 dec","Återhämtning"],["21–27 dec","Stark vecka"],["28–31 dec","Avslutning"]
+];
+
+const guides = {
+"Knäböj eller benpress": ["Knäböj: stå stabilt, spänn bålen och sänk dig kontrollerat. Knäna följer tårnas riktning. Pressa upp genom hela foten.","https://www.strengthlog.com/squat/"],
+"Bänkpress": ["Skulderbladen lätt bakåt och nedåt. Sänk stången kontrollerat mot bröstet och pressa upp med stabila fötter och skuldror.","https://www.strengthlog.com/bench-press/"],
+"Sittande kabelrodd": ["Håll bröstet uppe. Dra handtaget mot magen och för skulderbladen bakåt utan att kasta överkroppen.","https://www.strengthlog.com/cable-close-grip-seated-row/"],
+"Rumänska marklyft": ["Skjut höften bakåt med lätt böjda knän. Håll vikten nära benen och ryggen neutral. Res dig genom att föra höften framåt.","https://www.strengthlog.com/romanian-deadlift/"],
+"Pallof press": ["Stå med sidan mot kabeln. Pressa handtaget rakt fram och motstå rotation.","https://www.strengthlog.com/pallof-press/"],
+"Armhävningar": ["Håll kroppen rak, spänn bålen och sänk bröstet kontrollerat mellan händerna.","https://www.strengthlog.com/push-up/"],
+"Split squat": ["Stå i delad position. Sänk kroppen rakt ned och pressa upp genom främre foten.","https://www.strengthlog.com/bulgarian-split-squat/"],
+"Enbens höftlyft": ["Pressa genom hälen och lyft höften utan att rotera bäckenet. Spänn sätet i toppläget.","https://www.strengthlog.com/one-legged-glute-bridge/"],
+"Sidoplanka": ["Stöd på underarmen och håll kropp och bäcken i en rak linje.","https://www.strengthlog.com/side-plank/"],
+"Dead bug": ["Pressa ländryggen lätt mot golvet och sträck motsatt arm och ben utan att ryggen lyfter.","https://www.strengthlog.com/dead-bugs/"],
+"Marklyft": ["Stå nära stången. Spänn bålen och lyft genom att sträcka knä och höft samtidigt medan stången hålls nära kroppen.","https://www.strengthlog.com/deadlift/"],
+"Axelpress": ["Spänn säte och bål och pressa stång eller hantlar över huvudet utan att överdriva svanken.","https://www.strengthlog.com/overhead-press/"],
+"Latsdrag eller assisterade chins": ["Håll bröstet högt och dra armbågarna nedåt. Undvik att rycka eller luta dig kraftigt bakåt.","https://www.strengthlog.com/lat-pulldown/"],
+"Benpress eller hack squat": ["Håll ryggen mot stödet, låt knäna följa tårna och arbeta genom ett kontrollerat rörelseomfång.","https://www.strengthlog.com/leg-press/"],
+"Bröstpress eller hantelpress": ["Håll skulderbladen stabila. Sänk vikterna kontrollerat och pressa upp utan att axlarna glider fram.","https://www.strengthlog.com/dumbbell-chest-press/"],
+"Pike push-up": ["Håll höften högt i ett omvänt V. Sänk huvudet mot golvet framför händerna och pressa upp med axlarna.","https://www.strengthlog.com/pike-push-up/"],
+"Smala armhävningar": ["Placera händerna något smalare och håll armbågarna relativt nära kroppen.","https://www.strengthlog.com/close-grip-push-up/"],
+"Bird dog": ["Stå på alla fyra och sträck motsatt arm och ben utan att bäckenet roterar.","https://www.strengthlog.com/bird-dog/"],
+"Planka med axelklapp": ["Stå i hög planka och nudda motsatt axel med en hand i taget. Håll bäckenet stilla.","https://www.strengthlog.com/plank-shoulder-tap/"],
+"Hollow hold": ["Pressa ländryggen mot golvet och håll skuldror och ben lyfta så länge ryggen behåller kontakten.","https://www.strengthlog.com/hollow-hold/"],
+"Bakåtutfall eller split squat": ["Ta ett kontrollerat steg bakåt och sänk kroppen. Pressa tillbaka med främre benet.","https://www.strengthlog.com/reverse-body-weight-lunges/"],
+"Tåhävningar på ett ben": ["Sänk hälen kontrollerat och pressa sedan upp så högt som möjligt på framfoten.","https://www.strengthlog.com/standing-calf-raise/"],
+"Långsam armhävning": ["Sänk kroppen under 3–4 sekunder, pausa kort i botten och pressa upp kontrollerat.","https://www.strengthlog.com/push-up/"]
+};
+
+const sessions = [
+  {day:"Måndag",title:"Gym A · ben + press + drag",info:"55–65 min",gym:true,ex:[
+    ["Knäböj eller benpress","main",5],["Bänkpress","main",2.5],["Sittande kabelrodd","main",2.5],["Rumänska marklyft","secondary",5],["Pallof press","core",0]
+  ]},
+  {day:"Tisdag",title:"Hemma A · helkropp",info:"25–30 min",gym:false,ex:[
+    ["Armhävningar","home",0],["Split squat","home",0],["Enbens höftlyft","home",0],["Sidoplanka","homecore",0],["Dead bug","homecore",0]
+  ]},
+  {day:"Torsdag",title:"Gym B · höft + axlar + rygg",info:"55–65 min",gym:true,ex:[
+    ["Marklyft","deadlift",5],["Axelpress","main",2.5],["Latsdrag eller assisterade chins","main",2.5],["Benpress eller hack squat","secondary",5],["Bröstpress eller hantelpress","secondary",2.5]
+  ]},
+  {day:"Lördag",title:"Hemma B · överkropp + bål",info:"25–30 min",gym:false,ex:[
+    ["Pike push-up","home",0],["Smala armhävningar","home",0],["Bird dog","homecore",0],["Planka med axelklapp","homecore",0],["Hollow hold","homecore",0]
+  ]},
+  {day:"Söndag",title:"Hemma C · ben + kontroll",info:"25–30 min",gym:false,ex:[
+    ["Bakåtutfall eller split squat","home",0],["Enbens höftlyft","home",0],["Tåhävningar på ett ben","home",0],["Långsam armhävning","home",0],["Sidoplanka","homecore",0]
+  ]}
+];
+
+let currentWeek = Number(localStorage.getItem("strengthCurrentWeek") || 0);
+let currentSession = Number(localStorage.getItem("strengthCurrentSession") || 0);
+let state = JSON.parse(localStorage.getItem("strengthState") || '{"exercise":{},"session":{}}');
+
+const $ = s => document.querySelector(s);
+const eKey=(w,s,e)=>`${w}-${s}-${e}`;
+const sKey=(w,s)=>`${w}-${s}`;
+
+function save(){
+  localStorage.setItem("strengthState",JSON.stringify(state));
+  localStorage.setItem("strengthCurrentWeek",String(currentWeek));
+  localStorage.setItem("strengthCurrentSession",String(currentSession));
+}
+function countForWeek(w){ return w===14 ? 3 : 5; }
+function dose(type,w){
+  const n=w+1;
+  if(type==="core") return "3 × 8–12 / sida";
+  if(type==="homecore") return (n===6||n===13) ? "2 × 20–30 sek" : "3 × 30–45 sek";
+  if(type==="home") return (n===6||n===13) ? "2 × 6–10 lugnt" : "3 × 6–10";
+  if(n<=2) return type==="deadlift" ? "3 × 5" : "4 × 6";
+  if(n<=5) return type==="deadlift" ? "3 × 5" : "4 × 5";
+  if(n===6) return "3 × 5 · ca −15 %";
+  if(n<=9) return type==="deadlift" ? "4 × 4" : "5 × 4";
+  if(n<=12) return type==="deadlift" ? "4 × 3" : "5 × 3";
+  if(n===13) return "3 × 4 · lätt";
+  if(n===14) return type==="deadlift" ? "3 × 3" : "4 × 3";
+  return "3 × 3";
+}
+function previousWeight(w,s,e){
+  for(let pw=w-1;pw>=0;pw--){
+    const r=state.exercise[eKey(pw,s,e)];
+    if(r && Number(r.weight)>0) return Number(r.weight);
+  }
+  return null;
+}
+function suggestedWeight(w,s,e,inc){
+  const p=previousWeight(w,s,e); if(p===null) return null;
+  const n=w+1;
+  if(n===6||n===13) return Math.round((p*.85)*2)/2;
+  if(n===15) return p;
+  const prevRec=state.exercise[eKey(w-1,s,e)] || {};
+  if(prevRec.rir==="0") return p;
+  return Math.round((p+inc)*2)/2;
+}
+
+weeks.forEach((w,i)=>{
+  const o=document.createElement("option"); o.value=i; o.textContent=`Vecka ${i+1} · ${w[0]} · ${w[1]}`;
+  $("#weekSelect").appendChild(o);
+});
+$("#weekSelect").value=currentWeek;
+
+function renderTabs(){
+  const el=$("#tabs"); el.innerHTML="";
+  sessions.slice(0,countForWeek(currentWeek)).forEach((s,i)=>{
+    const b=document.createElement("button"); b.type="button";
+    b.className=i===currentSession?"active":"";
+    b.innerHTML=`<strong>${s.day}${state.session[sKey(currentWeek,i)]?" ✓":""}</strong><div class="tiny muted">${s.gym?"Gym":"Hemma"}</div>`;
+    b.onclick=()=>{currentSession=i;save();render();};
+    el.appendChild(b);
+  });
+}
+function renderExercises(){
+  const area=$("#exerciseList"); area.innerHTML="";
+  const ses=sessions[currentSession];
+  ses.ex.forEach((ex,i)=>{
+    const key=eKey(currentWeek,currentSession,i), rec=state.exercise[key]||{};
+    const guide=guides[ex[0]], sug=ses.gym?suggestedWeight(currentWeek,currentSession,i,ex[2]):null;
+    const card=document.createElement("div");
+    card.className="exercise"+(rec.done?" done":"");
+    card.innerHTML=`<div class="row between"><div><strong>${ex[0]}</strong><div class="small muted">${dose(ex[1],currentWeek)}</div></div>${sug!==null?`<span class="pill">Förslag ${sug} kg</span>`:""}</div>`;
+    const actions=document.createElement("div"); actions.className="row"; actions.style.marginTop="9px";
+    const how=document.createElement("button"); how.type="button"; how.textContent="Så gör du";
+    const guideBox=document.createElement("div"); guideBox.className="guide small"; guideBox.textContent=guide[0];
+    how.onclick=()=>{guideBox.classList.toggle("open"); how.textContent=guideBox.classList.contains("open")?"Dölj instruktion":"Så gör du";};
+    const video=document.createElement("a"); video.className="btn primary"; video.target="_blank"; video.rel="noopener noreferrer"; video.href=guide[1]; video.textContent="Teknik / video ↗";
+    actions.append(how,video); card.append(actions,guideBox);
+
+    const controls=document.createElement("div"); controls.className="row"; controls.style.marginTop="10px";
+    if(ses.gym){
+      const weight=document.createElement("input"); weight.type="number"; weight.min="0"; weight.max="500"; weight.step="0.5"; weight.placeholder="kg"; weight.value=rec.weight||"";
+      weight.setAttribute("aria-label","Använd vikt i kg");
+      weight.oninput=()=>{state.exercise[key]={...state.exercise[key],weight:weight.value};save();renderHistory();};
+      const rir=document.createElement("select");
+      ["","0","1","2","3+"].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v===""?"Reps kvar":`${v} reps kvar`;rir.appendChild(o)});
+      rir.value=rec.rir||"";
+      rir.onchange=()=>{state.exercise[key]={...state.exercise[key],rir:rir.value};save();};
+      controls.append(weight,rir);
+    }
+    const label=document.createElement("label"); label.className="row";
+    const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!rec.done;
+    cb.onchange=()=>{state.exercise[key]={...state.exercise[key],done:cb.checked};save();renderExercises();};
+    label.append(cb,document.createTextNode("Övning klar")); controls.append(label); card.appendChild(controls);
+    area.appendChild(card);
+  });
+}
+function renderHistory(){
+  const el=$("#history"); el.innerHTML="";
+  const rows=[];
+  for(let w=0;w<weeks.length;w++) sessions.forEach((s,si)=>{
+    if(!s.gym)return;
+    s.ex.forEach((ex,ei)=>{
+      const r=state.exercise[eKey(w,si,ei)];
+      if(r&&Number(r.weight)>0) rows.push({w,day:s.day,name:ex[0],weight:Number(r.weight),rir:r.rir||"–"});
+    });
+  });
+  if(!rows.length){el.innerHTML='<p class="small muted">Ingen gymhistorik registrerad ännu.</p>';return;}
+  rows.slice(-12).reverse().forEach(r=>{
+    const d=document.createElement("div"); d.className="history-item small";
+    d.innerHTML=`<div><strong>V${r.w+1} · ${r.name}</strong><div class="tiny muted">${r.day} · reps kvar ${r.rir}</div></div><strong>${r.weight} kg</strong>`;
+    el.appendChild(d);
+  });
+}
+function renderProgress(){
+  const n=countForWeek(currentWeek); let done=0;
+  for(let i=0;i<n;i++) if(state.session[sKey(currentWeek,i)])done++;
+  $("#progressBar").style.width=`${done/n*100}%`;
+  $("#progressText").textContent=`${done} av ${n} pass genomförda`;
+}
+function render(){
+  if(currentSession>=countForWeek(currentWeek)) currentSession=0;
+  $("#weekSelect").value=currentWeek;
+  const s=sessions[currentSession];
+  $("#sessionDay").textContent=`${s.day} · vecka ${currentWeek+1} · ${weeks[currentWeek][0]}`;
+  $("#sessionTitle").textContent=s.title;
+  $("#sessionInfo").textContent=s.info;
+  $("#sessionDone").checked=!!state.session[sKey(currentWeek,currentSession)];
+  $("#progressionText").textContent=s.gym
+    ?"När alla set går med bra teknik och ungefär 1–2 repetitioner kvar: öka normalt 2,5 kg för överkropp och upp till 5 kg för större ben/höftövningar. Vid 0 reps kvar: behåll vikten nästa gång."
+    :"När övre delen av repetitionsintervallet känns stabil: välj en svårare variant, långsammare sänkning eller paus i botten.";
+  renderTabs(); renderExercises(); renderProgress(); renderHistory(); save();
+}
+
+$("#weekSelect").onchange=()=>{currentWeek=Number($("#weekSelect").value);currentSession=0;render();};
+$("#sessionDone").onchange=e=>{state.session[sKey(currentWeek,currentSession)]=e.target.checked;save();renderTabs();renderProgress();};
+
+$("#exportBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify({version:1,state,currentWeek,currentSession},null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url;a.download="styrka-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+  $("#status").textContent="Backup exporterad.";
+};
+$("#importFile").onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const o=JSON.parse(r.result);
+    if(!o.state)throw 0;
+    state=o.state;currentWeek=Number(o.currentWeek||0);currentSession=Number(o.currentSession||0);save();render();
+    $("#status").textContent="Backup importerad.";
+  }catch{$("#status").textContent="Kunde inte läsa backupfilen.";}}
+  r.readAsText(f);e.target.value="";
+};
+$("#clearBtn").onclick=()=>{
+  if(confirm("Rensa all sparad träningsdata på den här enheten?")){
+    state={exercise:{},session:{}};save();render();$("#status").textContent="All träningsdata är rensad.";
+  }
+};
+
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault(); deferredPrompt=e; $("#installBtn").hidden=false;
+});
+$("#installBtn").onclick=async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $("#installBtn").hidden=true;
+};
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+render();
+</script>
+</body>
+</html>
