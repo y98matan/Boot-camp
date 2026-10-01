@@ -116,8 +116,10 @@ const guides = {
 "Knäböj eller benpress": ["Knäböj: stå stabilt, spänn bålen och sänk dig kontrollerat. Knäna följer tårnas riktning. Pressa upp genom hela foten.","https://www.strengthlog.com/squat/"],
 "Bänkpress": ["Skulderbladen lätt bakåt och nedåt. Sänk stången kontrollerat mot bröstet och pressa upp med stabila fötter och skuldror.","https://www.strengthlog.com/bench-press/"],
 "Sittande kabelrodd": ["Håll bröstet uppe. Dra handtaget mot magen och för skulderbladen bakåt utan att kasta överkroppen.","https://www.strengthlog.com/cable-close-grip-seated-row/"],
-"Rumänska marklyft": ["Skjut höften bakåt med lätt böjda knän. Håll vikten nära benen och ryggen neutral. Res dig genom att föra höften framåt.","https://www.strengthlog.com/romanian-deadlift/"],
-"Pallof press": ["Stå med sidan mot kabeln. Pressa handtaget rakt fram och motstå rotation.","https://www.strengthlog.com/pallof-press/"],
+"Lårcurl i maskin": ["Justera maskinen så att knäleden ligger i linje med maskinens rotationsaxel. Böj knäna kontrollerat så långt du kan, pausa kort och återgå långsamt utan att släppa spänningen.","https://www.strengthlog.com/one-legged-lying-leg-curl/"],
+"Kabelcrunch": ["Fäst ett rep högt i kabelmaskinen. Håll repet vid huvudet och böj överkroppen framåt genom att spänna magen. Återgå kontrollerat utan att dra med armarna.","https://www.strengthlog.com/cable-crunch/"],
+"Bicepscurl i maskin": ["Justera sitsen så att överarmarna ligger stabilt mot stödet och armbågarna är i linje med maskinens led. Curla upp kontrollerat och sänk långsamt.","https://www.strengthlog.com/machine-bicep-curl/"],
+"Triceps pushdown med rep": ["Stå stabilt framför kabelmaskinen med armbågarna intill kroppen. Pressa repet ned tills armarna är sträckta och återgå kontrollerat utan att flytta överarmarna.","https://www.strengthlog.com/tricep-pushdown-with-rope/"],
 "Armhävningar": ["Håll kroppen rak, spänn bålen och sänk bröstet kontrollerat mellan händerna.","https://www.strengthlog.com/push-up/"],
 "Split squat": ["Stå i delad position. Sänk kroppen rakt ned och pressa upp genom främre foten.","https://www.strengthlog.com/bulgarian-split-squat/"],
 "Enbens höftlyft": ["Pressa genom hälen och lyft höften utan att rotera bäckenet. Spänn sätet i toppläget.","https://www.strengthlog.com/one-legged-glute-bridge/"],
@@ -140,13 +142,13 @@ const guides = {
 
 const sessions = [
   {day:"Måndag",title:"Gym A · ben + press + drag",info:"55–65 min",gym:true,ex:[
-    ["Knäböj eller benpress","main",5],["Bänkpress","main",2.5],["Sittande kabelrodd","main",2.5],["Rumänska marklyft","secondary",5],["Pallof press","core",0]
+    ["Knäböj eller benpress","main",5],["Bänkpress","main",2.5],["Sittande kabelrodd","main",2.5],["Lårcurl i maskin","accessory",2.5],["Kabelcrunch","accessory",2.5],["Bicepscurl i maskin","accessory",2.5]
   ]},
   {day:"Tisdag",title:"Hemma A · helkropp",info:"25–30 min",gym:false,ex:[
     ["Armhävningar","home",0],["Split squat","home",0],["Enbens höftlyft","home",0],["Sidoplanka","homecore",0],["Dead bug","homecore",0]
   ]},
   {day:"Torsdag",title:"Gym B · höft + axlar + rygg",info:"55–65 min",gym:true,ex:[
-    ["Marklyft","deadlift",5],["Axelpress","main",2.5],["Latsdrag eller assisterade chins","main",2.5],["Benpress eller hack squat","secondary",5],["Bröstpress eller hantelpress","secondary",2.5]
+    ["Marklyft","deadlift",5],["Axelpress","main",2.5],["Latsdrag eller assisterade chins","main",2.5],["Benpress eller hack squat","secondary",5],["Bröstpress eller hantelpress","secondary",2.5],["Triceps pushdown med rep","accessory",2.5]
   ]},
   {day:"Lördag",title:"Hemma B · överkropp + bål",info:"25–30 min",gym:false,ex:[
     ["Pike push-up","home",0],["Smala armhävningar","home",0],["Bird dog","homecore",0],["Planka med axelklapp","homecore",0],["Hollow hold","homecore",0]
@@ -175,6 +177,7 @@ function dose(type,w){
   if(type==="core") return "3 × 8–12 / sida";
   if(type==="homecore") return (n===6||n===13) ? "2 × 20–30 sek" : "3 × 30–45 sek";
   if(type==="home") return (n===6||n===13) ? "2 × 6–10 lugnt" : "3 × 6–10";
+  if(type==="accessory") return (n===6||n===13) ? "2 × 8–10 lugnt" : "3 × 8–10";
   if(n<=2) return type==="deadlift" ? "3 × 5" : "4 × 6";
   if(n<=5) return type==="deadlift" ? "3 × 5" : "4 × 5";
   if(n===6) return "3 × 5 · ca −15 %";

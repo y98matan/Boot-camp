@@ -21,3 +21,10 @@ PWA-installation och service worker kräver HTTPS, förutom vid lokal utveckling
 
 Träningsdata sparas lokalt i webbläsaren via localStorage.
 Använd Exportera för backup om du byter telefon eller rensar webbläsardata.
+
+
+UPPDATERING v2:
+- Gym A: Rumänska marklyft ersatt av lårcurl i maskin.
+- Gym A: Pallof press ersatt av kabelcrunch.
+- Gym A: Bicepscurl i maskin tillagd.
+- Gym B: Triceps pushdown med rep tillagd.
